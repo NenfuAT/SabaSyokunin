@@ -1,0 +1,4 @@
+#環境変数
+.env
+#MineCraft
+src/games/minecraft/router/__pycache__

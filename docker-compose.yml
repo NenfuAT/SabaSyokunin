@@ -1,0 +1,13 @@
+services:
+  minecraft:
+    container_name: ${MINECRAFT_CONTAINER_HOST}
+    hostname: ${MINECRAFT_HOST}
+    env_file: .env
+    tty: true
+    build:
+      context: .
+      dockerfile: ./docker/minecraft/Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./src/games/minecraft:/src
