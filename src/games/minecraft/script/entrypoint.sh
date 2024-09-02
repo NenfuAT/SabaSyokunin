@@ -28,5 +28,3 @@ echo "Latest build: $BUILD"
 # Download the jar
 curl -X 'GET' $URL/versions/$VERSION/builds/$BUILD/downloads/paper-$VERSION-$BUILD.jar -o paper.jar
 
-# コンテナが終了しないようにするためのコマンド
-tail -f /dev/null

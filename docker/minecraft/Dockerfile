@@ -27,5 +27,5 @@ RUN pip install --upgrade pip
 RUN pip install -r lib/requirements.txt
 
 # 起動時にエントリーポイントスクリプトを実行
-CMD ["bash", "-c", "chmod 700 /src/script/entrypoint.sh && /src/script/entrypoint.sh"]
+CMD ["bash", "-c", "chmod 700 /src/script/entrypoint.sh && /src/script/entrypoint.sh && python3 /src/main.py"]
 
