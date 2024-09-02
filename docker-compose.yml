@@ -8,6 +8,8 @@ services:
       context: .
       dockerfile: ./docker/minecraft/Dockerfile
     ports:
-      - 8000:8000
+      - ${MINECRAFT_SERVER_PORT}:${MINECRAFT_SERVER_PORT}
+      - ${MINECRAFT_API_PORT}:${MINECRAFT_API_PORT}
     volumes:
-      - ./src/games/minecraft:/src
+    - ./src/games/minecraft:/src
+    
