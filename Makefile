@@ -14,3 +14,6 @@ log:
 
 minecraft:
 	docker exec -it $(MINECRAFT_CONTAINER_HOST) /bin/sh
+
+discord:
+	docker exec -it $(DISCORDBOT_CONTAINER_HOST) /bin/sh

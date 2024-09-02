@@ -1,4 +1,14 @@
 services:
+  discordbot:
+    container_name: ${DISCORDBOT_CONTAINER_HOST}
+    hostname: ${DISCORDBOT_HOST}
+    env_file: .env
+    tty: true
+    build:
+      context: .
+      dockerfile: ./docker/discordbot/Dockerfile
+    volumes:
+      - ./src/discordbot:/src
   minecraft:
     container_name: ${MINECRAFT_CONTAINER_HOST}
     hostname: ${MINECRAFT_HOST}
