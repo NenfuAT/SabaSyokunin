@@ -1,0 +1,7 @@
+#環境変数
+.env
+#MineCraft
+src/games/minecraft/router/__pycache__
+src/games/minecraft/service/__pycache__
+src/games/minecraft/server
+src/games/minecraft/log
