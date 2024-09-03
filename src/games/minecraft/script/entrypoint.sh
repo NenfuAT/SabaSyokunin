@@ -1,5 +1,5 @@
 #!/bin/bash
-
+screen -wipe
 # ディレクトリが存在しない場合のみ作成
 if [ ! -d "/src/server" ]; then
     mkdir -p /src/server

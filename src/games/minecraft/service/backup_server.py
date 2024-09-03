@@ -1,4 +1,5 @@
 import os
+import subprocess
 import zipfile
 from datetime import datetime
 
@@ -6,6 +7,12 @@ from fastapi.responses import JSONResponse
 
 
 def BackupServer():
+	try:
+		result = subprocess.run(['screen', '-ls'], capture_output=True, text=True, check=False)
+		if "papermc_server"in result.stdout:
+			return JSONResponse(content={"status": "Server is running"}, status_code=409)
+	except subprocess.CalledProcessError as e:
+		print("no screen")
 	# 圧縮するディレクトリと出力先の設定
 	source_dir = '/src/server'
 	backup_dir = '/src/backup'

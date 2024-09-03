@@ -26,11 +26,9 @@ async def on_ready():
 minecraft_group = app_commands.Group(name="minecraft", description="Manage the Minecraft server")
 
 # /minecraft start サブコマンドの定義
-@minecraft_group.command(name="start", description="Start the Minecraft server")
+@minecraft_group.command(name="start", description="Minecraft鯖を起動します")
 async def minecraft_start(interaction: discord.Interaction):
-    # 応答を遅延させる
     await interaction.response.defer()
-    
     response = requests.get(f'http://{MINECRAFT_CONTAINER_HOST}:{MINECRAFT_API_PORT}/api/start')
     
     if response.status_code == 200:
@@ -41,11 +39,9 @@ async def minecraft_start(interaction: discord.Interaction):
         await interaction.followup.send(f"エラー: ステータスコード {response.status_code}")
 
 # /minecraft stop サブコマンドの定義
-@minecraft_group.command(name="stop", description="Stop the Minecraft server")
+@minecraft_group.command(name="stop", description="Minecraft鯖を止めます")
 async def minecraft_stop(interaction: discord.Interaction):
-    # 応答を遅延させる
     await interaction.response.defer()
-    
     response = requests.get(f'http://{MINECRAFT_CONTAINER_HOST}:{MINECRAFT_API_PORT}/api/stop')
     
     if response.status_code == 200:
@@ -54,6 +50,44 @@ async def minecraft_stop(interaction: discord.Interaction):
         await interaction.followup.send("Minecraft鯖は起動していません")
     else:
         await interaction.followup.send(f"エラー: ステータスコード {response.status_code}")
+
+# /minecraft backup サブコマンドの定義
+@minecraft_group.command(name="backup", description="Minecraft鯖をバックアップします")
+async def minecraft_backup(interaction: discord.Interaction):
+    await interaction.response.defer()
+    response = requests.get(f'http://{MINECRAFT_CONTAINER_HOST}:{MINECRAFT_API_PORT}/api/backup')
+    
+    if response.status_code == 200:
+        await interaction.followup.send("Minecraft鯖をバックアップしました")
+    elif response.status_code == 409:
+        await interaction.followup.send("Minecraft鯖が起動中です停止してから実行してください")
+    else:
+        await interaction.followup.send(f"エラー: ステータスコード {response.status_code}")
+
+class DeleteModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="本当に消しますか? 消す場合「delete」と入力してください")
+        self.add_item(discord.ui.TextInput(label="確認コード", placeholder=""))
+
+    async def on_submit(self, interaction: discord.Interaction):
+        input_text = self.children[0].value
+        if input_text == "delete":
+            await interaction.response.defer()
+            response = requests.get(f'http://{MINECRAFT_CONTAINER_HOST}:{MINECRAFT_API_PORT}/api/delete')
+            
+            if response.status_code == 200:
+                await interaction.followup.send("Minecraft鯖を削除しました")
+            elif response.status_code == 409:
+                await interaction.followup.send("Minecraft鯖が起動中です停止してから実行してください")
+            else:
+                await interaction.followup.send(f"エラー: ステータスコード {response.status_code}")
+        else:
+            await interaction.response.send_message("無効な文字列です")
+
+@minecraft_group.command(name="delete", description="Minecraft鯖を削除します")
+async def minecraft_delete(interaction: discord.Interaction):
+    modal = DeleteModal()
+    await interaction.response.send_modal(modal)
 
 # コマンドグループをCommandTreeに追加
 tree.add_command(minecraft_group)
