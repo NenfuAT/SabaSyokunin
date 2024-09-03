@@ -5,3 +5,4 @@ src/games/minecraft/router/__pycache__
 src/games/minecraft/service/__pycache__
 src/games/minecraft/server
 src/games/minecraft/log
+src/games/minecraft/backup
