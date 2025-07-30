@@ -9,17 +9,3 @@ services:
       dockerfile: ./docker/discordbot/Dockerfile
     volumes:
       - ./src/discordbot:/src
-  minecraft:
-    container_name: ${MINECRAFT_CONTAINER_HOST}
-    hostname: ${MINECRAFT_HOST}
-    env_file: .env
-    tty: true
-    build:
-      context: .
-      dockerfile: ./docker/minecraft/Dockerfile
-    ports:
-      - ${MINECRAFT_SERVER_PORT}:${MINECRAFT_SERVER_PORT}
-      - ${MINECRAFT_API_PORT}:${MINECRAFT_API_PORT}
-    volumes:
-    - ./src/games/minecraft:/src
-    
