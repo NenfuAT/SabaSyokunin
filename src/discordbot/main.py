@@ -29,8 +29,8 @@ def proxmox_start():
     res = requests.post(url, headers=HEADERS, verify=False)
     return res
 
-def proxmox_stop():
-    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{MINECRAFT_LXC_VMID}/status/stop"
+def proxmox_shutdown():
+    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{MINECRAFT_LXC_VMID}/status/shutdown"
     res = requests.post(url, headers=HEADERS, verify=False)
     return res
 
@@ -78,7 +78,7 @@ async def minecraft_start(interaction: discord.Interaction):
             if is_minecraft_server_alive(MINECRAFT_LXC_HOST,MINECRAFT_LXC_PORT):
                 await interaction.followup.send("Minecraft鯖が起動しました")
                 return
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
         await interaction.followup.send("Minecraft鯖の起動を確認できませんでした")
     else:
         await interaction.followup.send(f"エラー: ステータスコード {res.status_code}")
@@ -87,7 +87,7 @@ async def minecraft_start(interaction: discord.Interaction):
 @minecraft_group.command(name="stop", description="Minecraft鯖を止めます")
 async def minecraft_stop(interaction: discord.Interaction):
     await interaction.response.defer()
-    res = proxmox_stop()
+    res = proxmox_shutdown()
     if res.status_code == 200:
         await interaction.followup.send("Minecraft鯖を停止しました")
     elif res.status_code == 500 and "not running" in res.text:
