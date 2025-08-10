@@ -74,11 +74,11 @@ async def minecraft_start(interaction: discord.Interaction):
     await interaction.response.defer()
     res = proxmox_start()
     if res.status_code == 200 or res.status_code == 500 and "already running" in res.text:
-        for _ in range(10):
+        for _ in range(24):
             if is_minecraft_server_alive(MINECRAFT_LXC_HOST,MINECRAFT_LXC_PORT):
                 await interaction.followup.send("Minecraft鯖が起動しました")
                 return
-            await asyncio.sleep(3)
+            await asyncio.sleep(5)
         await interaction.followup.send("Minecraft鯖の起動を確認できませんでした")
     else:
         await interaction.followup.send(f"エラー: ステータスコード {res.status_code}")
@@ -89,7 +89,7 @@ async def minecraft_stop(interaction: discord.Interaction):
     await interaction.response.defer()
     res = proxmox_shutdown()
     if res.status_code == 200:
-        await interaction.followup.send("Minecraft鯖を停止しました")
+        await interaction.followup.send("Minecraft鯖に停止命令を出しましたまもなく終了します...")
     elif res.status_code == 500 and "not running" in res.text:
         await interaction.followup.send("Minecraft鯖は起動していません")
     else:
