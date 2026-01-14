@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import socket
 
@@ -12,9 +13,21 @@ PROXMOX_API_TOKEN_ID = os.environ['PROXMOX_API_TOKEN_ID']
 PROXMOX_API_TOKEN_SECRET = os.environ['PROXMOX_API_TOKEN_SECRET']
 PROXMOX_HOST = os.environ['PROXMOX_HOST']  
 PROXMOX_NODE = os.environ['PROXMOX_NODE'] 
-MINECRAFT_LXC_VMID = os.environ['MINECRAFT_LXC_VMID']
-MINECRAFT_LXC_HOST = os.environ['MINECRAFT_LXC_HOST']
-MINECRAFT_LXC_PORT = int(os.environ['MINECRAFT_LXC_PORT'])
+
+# --- 設定ファイルの読み込み ---
+def load_config():
+    base_path = os.path.dirname(__file__)
+    config_path = os.path.join(base_path, 'config.json')
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            raw_data = json.load(f)
+            # DiscordサーバーID(k)をintに変換して保持
+            return {int(k): v for k, v in raw_data.items()}
+    except FileNotFoundError:
+        print("Error: config.json が見つかりません。")
+        return {}
+
+SERVER_CONFIG = load_config()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -24,18 +37,16 @@ HEADERS = {
     'Authorization': f'PVEAPIToken={PROXMOX_API_TOKEN_ID}={PROXMOX_API_TOKEN_SECRET}',
 }
 
-def proxmox_start():
-    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{MINECRAFT_LXC_VMID}/status/start"
-    res = requests.post(url, headers=HEADERS, verify=False)
-    return res
+def proxmox_start(vmid):
+    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{vmid}/status/start"
+    return requests.post(url, headers=HEADERS, verify=False)
 
-def proxmox_shutdown():
-    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{MINECRAFT_LXC_VMID}/status/shutdown"
-    res = requests.post(url, headers=HEADERS, verify=False)
-    return res
+def proxmox_shutdown(vmid):
+    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{vmid}/status/shutdown"
+    return requests.post(url, headers=HEADERS, verify=False)
 
-def proxmox_status():
-    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{MINECRAFT_LXC_VMID}/status/current"
+def proxmox_status(vmid):
+    url = f"{PROXMOX_HOST}/api2/json/nodes/{PROXMOX_NODE}/lxc/{vmid}/status/current"
     res = requests.get(url, headers=HEADERS, verify=False)
     return res
 
@@ -71,11 +82,15 @@ minecraft_group = app_commands.Group(name="minecraft", description="Manage the M
 # /minecraft start サブコマンドの定義
 @minecraft_group.command(name="start", description="Minecraft鯖を起動します")
 async def minecraft_start(interaction: discord.Interaction):
+    conf = SERVER_CONFIG.get(interaction.guild_id)
+    if not conf:
+        await interaction.response.send_message("このサーバーの設定が config.json にありません。", ephemeral=True)
+        return
     await interaction.response.defer()
-    res = proxmox_start()
+    res = proxmox_start(conf['VMID'])
     if res.status_code == 200 or res.status_code == 500 and "already running" in res.text:
         for _ in range(24):
-            if is_minecraft_server_alive(MINECRAFT_LXC_HOST,MINECRAFT_LXC_PORT):
+            if is_minecraft_server_alive(conf['HOST'], conf['PORT']):
                 await interaction.followup.send("Minecraft鯖が起動しました")
                 return
             await asyncio.sleep(5)
@@ -86,8 +101,12 @@ async def minecraft_start(interaction: discord.Interaction):
 
 @minecraft_group.command(name="stop", description="Minecraft鯖を止めます")
 async def minecraft_stop(interaction: discord.Interaction):
+    conf = SERVER_CONFIG.get(interaction.guild_id)
+    if not conf:
+        await interaction.response.send_message("このサーバーの設定がありません。", ephemeral=True)
+        return
     await interaction.response.defer()
-    res = proxmox_shutdown()
+    res = proxmox_shutdown(conf['VMID'])
     if res.status_code == 200:
         await interaction.followup.send("Minecraft鯖に停止命令を出しましたまもなく終了します...")
     elif res.status_code == 500 and "not running" in res.text:

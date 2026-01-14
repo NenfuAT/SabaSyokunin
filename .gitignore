@@ -1,5 +1,6 @@
 #環境変数
 .env
+config.json
 #MineCraft
 src/games/minecraft/router/__pycache__
 src/games/minecraft/service/__pycache__
